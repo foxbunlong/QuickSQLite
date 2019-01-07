@@ -1,4 +1,4 @@
-package com.longthay.quicksqlitesample
+package com.longthay.quicksqlitesample.models
 
 import android.util.Log
 import org.json.JSONObject
