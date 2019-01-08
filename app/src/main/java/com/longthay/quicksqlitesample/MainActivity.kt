@@ -7,19 +7,23 @@ import android.util.Log
 import android.view.Menu
 import android.view.MenuItem
 import android.widget.LinearLayout
+import android.widget.Toast
 import com.longthay.quicksqlite.QSDbWrapper
 import com.longthay.quicksqlite.QSModel
 import com.longthay.quicksqlitesample.adapters.MainAdapter
 import com.longthay.quicksqlitesample.models.events.MainItemSelectedEvent
 import com.longthay.quicksqlitesample.views.DividerItemDecoration
 import kotlinx.android.synthetic.main.activity_main.*
+import kotlinx.android.synthetic.main.activity_main.view.*
 import org.greenrobot.eventbus.EventBus
 import org.greenrobot.eventbus.Subscribe
 import org.greenrobot.eventbus.ThreadMode
 
 class MainActivity : AppCompatActivity() {
 
-    lateinit var listAdapter : MainAdapter
+    lateinit var listAdapter: MainAdapter
+    var currentEntry: QSModel? = null
+    var isInsert = true
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -51,11 +55,28 @@ class MainActivity : AppCompatActivity() {
 
     private fun setupUIEvents() {
         btnAdd.setOnClickListener {
-            var entry = QSModel()
-            entry.title = etTitle.text.toString()
-            entry.subtitle = etSubTitle.text.toString()
 
-            QSDbWrapper.insert(this@MainActivity, entry)
+            // Validate
+            if (etTitle.text.toString().isEmpty() || etSubTitle.text.toString().isEmpty()) {
+                Toast.makeText(this@MainActivity, "Empty field", Toast.LENGTH_SHORT).show()
+                return@setOnClickListener
+            }
+
+            if (isInsert) {
+                currentEntry = QSModel()
+            }
+
+            if (currentEntry != null) {
+                currentEntry!!.title = etTitle.text.toString()
+                currentEntry!!.subtitle = etSubTitle.text.toString()
+
+                QSDbWrapper.insertOrUpdate(this@MainActivity, currentEntry!!)
+            }
+
+            etTitle.text.clear()
+            etSubTitle.text.clear()
+            isInsert = true
+            btnAdd.text = "Add"
 
             bindData()
         }
@@ -102,6 +123,12 @@ class MainActivity : AppCompatActivity() {
 
     @Subscribe(threadMode = ThreadMode.MAIN)
     fun onEvent(event: MainItemSelectedEvent) {
+        btnAdd.text = "Save"
+        isInsert = false
 
+        currentEntry = listAdapter.bankList[event.position]
+
+        etTitle.setText(currentEntry!!.title)
+        etSubTitle.setText(currentEntry!!.subtitle)
     }
 }
