@@ -1,4 +1,4 @@
-package com.longthay.quicksqlite
+package com.longthay.quicksqlite.log
 
 import android.util.Log
 

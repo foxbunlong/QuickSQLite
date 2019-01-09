@@ -8,13 +8,13 @@ import android.view.Menu
 import android.view.MenuItem
 import android.widget.LinearLayout
 import android.widget.Toast
+import com.longthay.quicksqlite.DataReturnListener
 import com.longthay.quicksqlite.QSDbWrapper
-import com.longthay.quicksqlite.QSModel
+import com.longthay.quicksqlite.model.QSModel
 import com.longthay.quicksqlitesample.adapters.MainAdapter
 import com.longthay.quicksqlitesample.models.events.MainItemSelectedEvent
 import com.longthay.quicksqlitesample.views.DividerItemDecoration
 import kotlinx.android.synthetic.main.activity_main.*
-import kotlinx.android.synthetic.main.activity_main.view.*
 import org.greenrobot.eventbus.EventBus
 import org.greenrobot.eventbus.Subscribe
 import org.greenrobot.eventbus.ThreadMode
@@ -70,22 +70,43 @@ class MainActivity : AppCompatActivity() {
                 currentEntry!!.title = etTitle.text.toString()
                 currentEntry!!.subtitle = etSubTitle.text.toString()
 
-                QSDbWrapper.insertOrUpdate(this@MainActivity, currentEntry!!)
+//                QSDbWrapper.insertOrUpdate(this@MainActivity, currentEntry!!, object : DataReturnListener {
+//                    override fun onDataReceived(data: MutableList<QSModel>) {
+//                        bindData()
+//                    }
+//                })
+
+                val list = mutableListOf<QSModel>()
+                for (i in 0..99999) {
+                    list.add(currentEntry!!)
+                }
+
+                Log.d("AAAAAAAAA", System.currentTimeMillis().toString())
+
+                QSDbWrapper.insertOrUpdate(this@MainActivity, list, object : DataReturnListener {
+                    override fun onDataReceived(data: MutableList<QSModel>) {
+                        bindData()
+                        Log.d("AAAAAAAAA", System.currentTimeMillis().toString())
+                    }
+
+                })
+
             }
 
             etTitle.text.clear()
             etSubTitle.text.clear()
             isInsert = true
             btnAdd.text = "Add"
-
-            bindData()
         }
     }
 
     private fun bindData() {
-        val list = QSDbWrapper.getAll(this@MainActivity)
-        listAdapter.bankList = list
-        listAdapter.notifyDataSetChanged()
+        QSDbWrapper.getAll(this@MainActivity, object : DataReturnListener {
+            override fun onDataReceived(data: MutableList<QSModel>) {
+                listAdapter.bankList = data
+                listAdapter.notifyDataSetChanged()
+            }
+        })
     }
 
     override fun onCreateOptionsMenu(menu: Menu?): Boolean {

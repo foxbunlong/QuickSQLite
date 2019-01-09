@@ -6,7 +6,7 @@ import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import android.widget.TextView
-import com.longthay.quicksqlite.QSModel
+import com.longthay.quicksqlite.model.QSModel
 import com.longthay.quicksqlitesample.R
 import com.longthay.quicksqlitesample.models.events.MainItemSelectedEvent
 import org.greenrobot.eventbus.EventBus
@@ -31,7 +31,7 @@ class MainAdapter(val context: Context) : RecyclerView.Adapter<MainAdapter.ItemV
 
     override fun onBindViewHolder(holder: MainAdapter.ItemViewHolder, position: Int) {
         // Item
-        holder?.tvTitle?.setText(bankList[position].title)
+        holder?.tvTitle?.setText(bankList[position].id.toString() + " - " + bankList[position].title)
         holder?.tvSubTitle?.setText(bankList[position].subtitle)
     }
 

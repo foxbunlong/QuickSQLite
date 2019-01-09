@@ -1,4 +1,4 @@
-package com.longthay.quicksqlite
+package com.longthay.quicksqlite.model
 
 import android.util.Log
 import org.json.JSONObject
