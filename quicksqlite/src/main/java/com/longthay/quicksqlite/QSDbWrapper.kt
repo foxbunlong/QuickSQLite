@@ -3,6 +3,7 @@ package com.longthay.quicksqlite
 import android.content.ContentValues
 import android.content.Context
 import android.database.sqlite.SQLiteDatabase
+import android.database.sqlite.SQLiteStatement
 import android.provider.BaseColumns
 import android.util.Log
 import com.longthay.quicksqlite.log.QSLogger
@@ -212,7 +213,7 @@ class QSDbWrapper {
         fun runThread(context: Context, entryList: MutableList<QSModel>, callback: DataReturnListener) {
             Observable.create(object : ObservableOnSubscribe<String> {
                 override fun subscribe(emitter: ObservableEmitter<String>) {
-                    insert(context, entryList)
+                    insertManySQL(context, entryList)
                     emitter.onNext("")
                     emitter.onComplete()
                 }
@@ -252,7 +253,7 @@ class QSDbWrapper {
             val newRowId = getWritableDb(context).insert(QSDbHelper.QSModelContract.QSModelEntry.TABLE_NAME, null, values)
         }
 
-        fun insert(context: Context, entryList: MutableList<QSModel>) {
+        fun insertMany(context: Context, entryList: MutableList<QSModel>) {
 
             getWritableDb(context).beginTransaction()
 
@@ -264,7 +265,31 @@ class QSDbWrapper {
                 }
 
                 // Insert the new row, returning the primary key value of the new row
-                val newRowId = getWritableDb(context).insert(QSDbHelper.QSModelContract.QSModelEntry.TABLE_NAME, null, values)
+                getWritableDb(context).insert(QSDbHelper.QSModelContract.QSModelEntry.TABLE_NAME, null, values)
+//                val newRowId = getWritableDb(context).insert(QSDbHelper.QSModelContract.QSModelEntry.TABLE_NAME, null, values)
+            }
+
+            getWritableDb(context).setTransactionSuccessful()
+            getWritableDb(context).endTransaction()
+        }
+
+        fun insertManySQL(context: Context, entryList: MutableList<QSModel>) {
+
+            getWritableDb(context).beginTransaction()
+
+            for (entry in entryList) {
+                // Create a new map of values, where column names are the keys
+                val values = arrayOfNulls<String>(2)
+                values[0] = entry.title
+                values[1] = entry.subtitle
+
+                // Insert the new row, returning the primary key value of the new row
+                val sqlString = "INSERT INTO " +
+                        "${QSDbHelper.QSModelContract.QSModelEntry.TABLE_NAME} " +
+                        "(${QSDbHelper.QSModelContract.QSModelEntry.COLUMN_NAME_TITLE}," +
+                        "${QSDbHelper.QSModelContract.QSModelEntry.COLUMN_NAME_SUBTITLE}) " +
+                        "VALUES (?,?)"
+                getWritableDb(context).execSQL(sqlString, values)
             }
 
             getWritableDb(context).setTransactionSuccessful()
